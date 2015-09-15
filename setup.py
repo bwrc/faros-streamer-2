@@ -15,5 +15,5 @@ setup(name='faros-streamer',
                           'construct>=2.5.2',
                           'crc16>=0.1.1'],
       entry_points={"console_scripts":
-                    ["faros = faros_streamer_cli"]}
+                    ["faros = faros_streamer.streamer:faros_cli"]}
 )

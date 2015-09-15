@@ -14,10 +14,10 @@
 import sys
 import argparse
 import time
-from libfaros import *
-from utilities import *
+from .libfaros import *
+from .utilities import *
   
-def faros_streamer_cli():
+def faros_cli():
     parser = argparse.ArgumentParser(description = "Faros Streamer")
     parser.add_argument("--scan", action = "store_true", help="Scan for available Bluetooth devices.")
     parser.add_argument("--blink", action = "store_true", dest = "blink_device", help="Blink the lights of a device.")

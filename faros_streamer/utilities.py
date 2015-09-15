@@ -9,7 +9,7 @@
 #
 # Please see the file LICENSE for details.
 
-from libfaros import *
+from .libfaros import *
 import hashlib
 from pylsl import StreamInfo, StreamOutlet
 import threading
