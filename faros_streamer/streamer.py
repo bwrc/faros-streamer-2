@@ -28,6 +28,7 @@ def faros_cli():
 
 
     parser.add_argument("--show-settings", action = "store_true", dest = "show_settings", help="Get the settings of a device")
+    parser.add_argument("--sync-time", action = "store_true", dest = "sync_time", help="Synchronise device time.")
 
     parser.add_argument("--configure", action = "store_true", help="Configure the device.")
     parser.add_argument("--ecg-n", dest = "ecg_n", help="Number of ECG channels (1 or 3).", default = 1)
@@ -117,6 +118,10 @@ def faros_cli():
         properties = get_properties(faros_socket)
         print_properties(properties)
 
+    # Synchronise the device time
+    if args.sync_time:
+        sync_time(faros_socket)
+        
     # Should the device blink
     if args.blink_device:
         blink_device(faros_socket)

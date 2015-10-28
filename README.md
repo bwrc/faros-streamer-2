@@ -61,6 +61,12 @@ Once the device is configured, you can now stream data as follows:
    faros --mac AA:BB:CC:11:22:33  --stream
 ```
 
+## Synchronising the device time
+The device time can be synchronised to the computer's clock using the following command:
+```
+   faros --mac AA:BB:CC:11:22:33 --sync-time
+```
+
 ### Chaining multiple commands
 It is also possible to chain multiple commands, e.g., configuring the device and directly starting the LSL streaming:
 ```

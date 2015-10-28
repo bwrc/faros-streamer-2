@@ -12,7 +12,9 @@
 import bluetooth
 from construct import *
 from collections import OrderedDict
+import struct
 import crc16
+import time
 
 # -------------------------------------------------------------------------------
 # Functions for printing
@@ -23,6 +25,16 @@ def print_devices(x):
     for i in x:
         print(i + "\t" + x[i])
 
+
+def sync_time(s):
+    print("-" * 45)
+    print("Synchronising time")
+    print("-" * 45)
+    print_kv("Old time", get_device_time(s))
+    set_device_time(s)
+    print_kv("New time", get_device_time(s))
+    print("-" * 45)
+    print("")
 
 def get_devices():
     """ Search for bluetooth devices and return
@@ -62,10 +74,10 @@ def print_properties(x):
         of a Faros device.
     """
     settings = unpack_settings(x['settings'])
-    
-    print("-" * 35)
+
+    print("-" * 45)
     print("Device settings")
-    print("-" * 35)
+    print("-" * 45)
     print_kv("Name", x['name'])
     print_kv("Firmware version", x['firmware-version'])
     print_kv("Firmware build date", x['firmware-build'])
@@ -80,7 +92,9 @@ def print_properties(x):
     print_kv("Acc resolution (uV)", settings['acc_res'])
     print("")
     print_kv("Temperature recording", settings['temperature'])
-    print("-" * 35)
+    print("")
+    print_kv("Device time:", binary_time_to_str(x['device_time']))
+    print("-" * 45)
     print("")
 
 # -------------------------------------------------------------------------------
@@ -91,10 +105,11 @@ def get_properties(s):
     """ Get properties (name, firmware veersion and build date, and settings)
         of a Faros device connected to socket s.
     """
-    properties = ['name', 'firmware-version', 'firmware-build', 'settings']
+    properties = ['name', 'firmware-version', 'firmware-build', 'device_time', 'settings']
     out = {}
     for p in properties:
         out[p] = get_property(s, p)
+
     return(out)
 
 
@@ -276,22 +291,24 @@ def disconnect(s):
     s.close()
 
     
-def send_command(s, command, r_length = 0):
+def send_command(s, command, r_length = 0, decode = True):
     """ Send a command to a Faros device.
 
         s        : the socket to send to
         command  : the command to send
         r_length : response length (if any). Default is 0 (no response)
+        decode   : should the response data be decoded to ASCII
     """
     data = None
     s.send(command + '\r')
 
     if r_length:
         data = s.recv(r_length)
-        try:
-            data = data.decode("UTF-8").strip()
-        except UnicodeDecodeError:
-            data = None
+        if decode:
+            try:
+                data = data.decode("UTF-8").strip()
+            except UnicodeDecodeError:
+                data = None
     return(data)
 
 
@@ -300,34 +317,51 @@ def get_property(s, p):
         p can be 'firmware-version', 'firmware'build', 'name'
         or 'settings'.
     """
-    prop_map = {'firmware-version': ['wbainf', 9],
-                'firmware-build': ['wbaind', 9],
-                'name' : ['wbawho', 12],
-                'settings' : ['wbagds', 12]}
-
+    prop_map = {'firmware-version': ['wbainf', 9, True],
+                'firmware-build': ['wbaind', 9, True],
+                'name' : ['wbawho', 12, True],
+                'device_time' : ['wbagdt', 8, False],
+                'settings' : ['wbagds', 12, True]}
     if p in prop_map.keys():
-        res = send_command(s, prop_map[p][0], prop_map[p][1])
+        res = send_command(s, prop_map[p][0], prop_map[p][1], prop_map[p][2])
         return res
     else:
         return None
 
+def set_device_time(s):
+    """ Set current device time. """
+    current_time = int(time.time())
+    current_time += (-time.timezone)
+
+    ct_bytes = struct.pack('i', current_time)
+
+    s.send('wbasdt')
+    s.send(ct_bytes)
+    s.send('\r')
+
+    data = s.recv(7)
+    return data
+
+def binary_time_to_unix_time(x):
+    """ Convert Faros binary time to UNIX time. """
+    device_time_bytes = x[3:].strip()
+    return float(struct.unpack("<L", device_time_bytes)[0])
+
+def unix_time_to_ts(x):
+    """ Return the current time as a string. """
+    return time.strftime('%Y-%m-%d %H:%M:%S', time.gmtime(x))
+
+def binary_time_to_str(x):
+    """ Convert Faros binary time to a string. """
+    return unix_time_to_ts(binary_time_to_unix_time(x))
+
+def get_device_time(s):
+    """ Get current device time. """
+    s.send('wbagdt' + '\r')
+    data = s.recv(8)
     
-def get_firmware(s):
-    """ Get firmware version.  """
+    return binary_time_to_str(data)
     
-    command = 12
-    s.sen
-    ser.write(bytes("\\wbainf\r"))
-    res = ser.read(9).decode("UTF-8").strip()
-    return(res)
-
-
-def get_firmware_build_date(ser):
-    """ Get firmware build date. """
-
-    ser.write(bytes("\\wbaind\r"))
-    res = ser.read(9).decode("UTF-8").strip()
-    return(res)
 
 # -------------------------------------------------------------------------------
 # Unpack the data received from a Faros device
