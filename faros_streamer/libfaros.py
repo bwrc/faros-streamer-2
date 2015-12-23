@@ -324,13 +324,9 @@ def get_property(s, p):
                 'settings' : ['wbagds', 12, True]}
 
     if p in prop_map.keys():
-        if p == 'name':
-            res = send_command(s, prop_map[p][0], prop_map[p][1], prop_map[p][2])
-            if res.startswith('FAROS'):
+        res = send_command(s, prop_map[p][0], prop_map[p][1], prop_map[p][2])
+        if (p == 'name') and res.startswith('FAROS'):
                 res += s.recv(2).decode("UTF-8").strip()
-        else: 
-            res = send_command(s, prop_map[p][0], prop_map[p][1], prop_map[p][2])
-
         return res
     else:
         return None

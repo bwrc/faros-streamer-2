@@ -97,7 +97,7 @@ def faros_cli():
         print("Connection established.\n")
     except:
         faros_socket = None
-        print("Unable to connect to device.")
+        print("Unable to connect to device ({0}).".format(sys.exc_info()[0]))
         sys.exit(1)
 
     # Set different parameters of the Faros device
