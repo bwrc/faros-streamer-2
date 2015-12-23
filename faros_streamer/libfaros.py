@@ -322,8 +322,15 @@ def get_property(s, p):
                 'name' : ['wbawho', 12, True],
                 'device_time' : ['wbagdt', 8, False],
                 'settings' : ['wbagds', 12, True]}
+
     if p in prop_map.keys():
-        res = send_command(s, prop_map[p][0], prop_map[p][1], prop_map[p][2])
+        if p == 'name':
+            res = send_command(s, prop_map[p][0], prop_map[p][1], prop_map[p][2])
+            if res.startswith('FAROS'):
+                res += s.recv(2).decode("UTF-8").strip()
+        else: 
+            res = send_command(s, prop_map[p][0], prop_map[p][1], prop_map[p][2])
+
         return res
     else:
         return None
