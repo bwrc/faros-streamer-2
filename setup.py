@@ -12,7 +12,7 @@ setup(name='faros-streamer',
       include_package_data=False,
       install_requires = ['pylsl>=1.10.4',
                           'pybluez>=0.22',
-                          'construct>=2.5.2',
+                          'construct==2.5.2',
                           'crc16>=0.1.1'],
       entry_points={"console_scripts":
                     ["faros = faros_streamer.streamer:faros_cli"]}
