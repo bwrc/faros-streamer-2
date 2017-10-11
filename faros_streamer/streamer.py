@@ -34,9 +34,9 @@ def faros_cli():
     parser.add_argument("--ecg-n", dest = "ecg_n", help="Number of ECG channels (1 or 3).", default = 1)
     parser.add_argument("--ecg-fs", dest = "ecg_fs", help="ECG sampling rate in Hz (0, 100, 125, 250, 500, 1000).", default = 250)
     parser.add_argument("--ecg-res", dest = "ecg_res", help="ECG resolution in uV / count (0.25 uV or 1 uV).", default = 1)
-    parser.add_argument("--ecg-hp", dest = "ecg_hp", help="ECG highpass filter in Hz (1 Hz or 10 Hz).", default = 1)
+    parser.add_argument("--ecg-hp", dest = "ecg_hp", help="ECG highpass filter in Hz (0.05 Hz or 10 Hz).", default = 0.05)
     
-    parser.add_argument("--acc-fs", dest = "acc_fs", help="Acc sampling rate in Hz (0, 20, 25, 40, 50, 100)", default = 20)
+    parser.add_argument("--acc-fs", dest = "acc_fs", help="Acc sampling rate in Hz (25 Hz or 100 Hz)", default = 25)
     parser.add_argument("--acc-res", dest = "acc_res", help="Acc resolution in mg / count (0.25 uV or 1 uV)", default = 1)
 
     parser.add_argument("--rr", dest = "rr", help="Record RR interval (0 = no, 1 = yes)", default = 0)

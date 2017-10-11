@@ -10,7 +10,7 @@
 # Please see the file LICENSE for details.
 
 import bluetooth
-from construct import *
+from construct import Struct, Byte, BitStruct, Int32ul, Array, Int16sl
 from collections import OrderedDict
 import struct
 import crc16
@@ -119,8 +119,7 @@ def get_ecg_str_fs(s = None):
           '1' : 1000,
           '2' : 500,
           '4' : 250,
-          '8' : 125,
-          't' : 100}
+          '8' : 125}
     if s is None:
         return x
     else:
@@ -137,7 +136,7 @@ def get_ecg_str_res(s = None):
 
 def get_ecg_str_hp(s = None):
     """ Get ECG high-pass filter given character. """
-    x = {'0' : 1, '1' : 10}
+    x = {'0' : 0.05, '1' : 10}
     if s is None:
         return x
     else:
@@ -157,10 +156,8 @@ def get_acc_str_fs(s = None):
     """ Get accelerometer sampling rate given character. """
     x = {'0' : 0,
          '1' : 100,
-         '2' : 50,
-         '3' : 40,
-         '4' : 25,
-         't' : 20}
+         '4' : 25}
+    
     if s is None:
         return x
     else:
@@ -169,7 +166,9 @@ def get_acc_str_fs(s = None):
     
 def get_acc_str_res(s = None):
     """ Get accelerometer resolution given character. """
-    x = {'0' : 0.25, '1' : 1}
+    x = {'0' : 0.25,
+         '1' : 1,
+         '2' : 0.5}
     if s is None:
         return x
     else:
@@ -234,9 +233,9 @@ def inv_lookup(d, v):
 def mode_to_str(ecg_n   = '1',
                 ecg_fs  = '100',
                 ecg_res = '1',
-                ecg_hp  = '0',
+                ecg_hp  = '0.05',
                 rr      = '0',
-                acc_fs  = '20',
+                acc_fs  = '100',
                 acc_res = '1',
                 temp    = '0'):
     """ Given settings (sampling rates, resolutions etc), Return the settings
@@ -450,24 +449,21 @@ def unpack_data(packet,
 
 def get_packet_header():
     
-    packet_header = Struct('packet_format',
-                             Bytes('sig_1', 1),
-                             Bytes('sig_2', 1),
-                             Bytes('sig_3', 1),
-                             BitStruct("flag",
-                                  BitField("battery_h", 1),
-                                  BitField("battery_l", 1),
-                                  BitField("rr_error", 1),
-                                  BitField("dummy_4", 1),
-                                  BitField("dummy_3", 1),
-                                  BitField("dummy_2", 1),
-                                  BitField("dummy_1", 1),
-                                  BitField("rr_in_packet", 1)),
-                             BitStruct("packet_number",
-                                  BitField("pn", 32, swapped = True)))
-    
-    return packet_header
+        return Struct(
+            "sig_1" / Byte,
+            "sig_2" / Byte,
+            "sig_3" / Byte,
+            "flag" / BitStruct(
+                "battery_h" / Byte,
+                "battery_l" / Byte,
+                "rr_error" / Byte,
+                "dummy_4" / Byte,
+                "dummy_3" / Byte,
+                "dummy_2" / Byte,
+                "dummy_1" / Byte,
+                "rr_in_packet" / Byte),
+            "packet_number" / Int32ul)
 
 
 def get_data_packet(N, name):
-    return Struct('packet_format', Array(N, SLInt16(name)))
+    return Struct(name / Array(N, Int16sl))

@@ -125,7 +125,7 @@ class StreamerThread(threading.Thread):
         command = "wbaom7"
         res     = send_command(self.faros_socket, command, 7)
 
-        p_crc = Struct('packet_format', Array(1, ULInt16('crc')))
+        p_crc = Struct('crc' /  Array(1, Int16sl))
 
         self.faros_socket.setblocking(True)
 
